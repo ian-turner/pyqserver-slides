@@ -1,0 +1,19 @@
+# LaTeX build output
+build/
+
+# LaTeX auxiliary files (if ever built in the source directory)
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+
+# Editor and OS files
+/**/.DS_Store
+/**/*.swp
+
+tmp
