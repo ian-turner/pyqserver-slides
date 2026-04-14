@@ -1,14 +1,6 @@
 \documentclass{beamer}
 
-\usetheme{Madrid}
-\usecolortheme{default}
-
-% Replace the footer with just the slide number
-\setbeamertemplate{footline}{%
-  \hfill\usebeamerfont{page number in head/foot}%
-  \usebeamercolor[fg]{page number in head/foot}%
-  \insertframenumber\,/\,\inserttotalframenumber\kern2em\vskip2pt%
-}
+\usetheme[numbering=fraction]{metropolis}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -28,7 +20,7 @@
 \end{frame}
 
 \begin{frame}{Outline}
-  \tableofcontents
+  \tableofcontents[hideallsubsections]
 \end{frame}
 
 \section{Introduction}
