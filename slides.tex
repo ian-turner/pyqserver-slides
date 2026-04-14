@@ -14,6 +14,8 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{circuitikz}
 
 \title{Efficient Simulation of Proto-Quipper Programs}
 \author{Ian Turner, Peng Fu}
@@ -35,7 +37,10 @@
 
 \begin{frame}{Quantum Programming Languages}
   \begin{itemize}
-    \item
+    \item Quantum programming languages allow programmers to design quantum algorithms at varying levels of abstraction
+    \item Low-level: OpenQASM --- an intermediate representation for describing quantum circuits
+    \item Mid-level: Cirq and Qiskit --- use Python libraries to construct quantum circuits
+    \item High-level: Silq, Q\#, Quipper, Proto-Quipper --- provide advanced features such as automatic uncomputation, type-checking, dynamic lifting, and type-safe circuit reversing and control
   \end{itemize}
 \end{frame}
 
@@ -43,7 +48,13 @@
 
 \begin{frame}{Proto-Quipper}
   \begin{itemize}
-    \item
+    \item Proto-Quipper is a family of functional quantum programming languages giving a formal foundation to Quipper
+    \item Has two runtimes: \emph{circuit generation time} and \emph{circuit execution time}
+    \begin{itemize}
+      \item Variables fixed at generation time are called \emph{parameters}; variables fixed at execution time are called \emph{states}
+    \end{itemize}
+    \item \emph{Dynamic lifting} allows state variables to be promoted to parameters --- measurement results from execution time can inform generation of the next circuit
+    \item This interleaving of the two runtimes enables more complex circuits, but is expensive: all active qubits must be held in long-term storage while awaiting classical control
   \end{itemize}
 \end{frame}
 
@@ -51,15 +62,32 @@
 
 \begin{frame}{Simulating Proto-Quipper}
   \begin{itemize}
-    \item
+    \item Proto-Quipper uses a client-server architecture for simulation
+    \item The \emph{client} is the Proto-Quipper interpreter; the \emph{server} is the simulator
+    \item The client sends quantum instructions (QServer commands) to the server; the server sends back measurement results via dynamic lifting
   \end{itemize}
+  \begin{center}
+    \resizebox{0.55\textwidth}{!}{%
+      \begin{circuitikz}
+        \tikzstyle{every node}=[font=\LARGE]
+        \draw [rounded corners=4.8] (6.25,15) rectangle node {\LARGE Client} (10.25,10.25);
+        \draw [rounded corners=4.8] (16.25,15) rectangle node {\LARGE Server} (20.25,10.25);
+        \draw [->, >=Stealth] (10.25,14) -- (16.25,14);
+        \draw [->, >=Stealth] (16.25,11.5) -- (10.25,11.5);
+        \node [font=\LARGE] at (13.25,14.5) {Commands};
+        \node [font=\LARGE] at (13.25,12) {Dynamic Lifting};
+      \end{circuitikz}
+    }
+  \end{center}
 \end{frame}
 
 \subsection{Contributions}
 
 \begin{frame}{Contributions}
   \begin{itemize}
-    \item
+    \item Extend the Proto-Quipper simulation architecture with state-of-the-art simulators from Cirq and Qiskit, enabling dynamic lifting on third-party simulators
+    \item Optimize the new simulators via \emph{instruction queuing} --- deferring instructions that do not need to be evaluated immediately
+    \item Demonstrate that the new simulators significantly outperform the existing custom Haskell simulator across a variety of benchmarks
   \end{itemize}
 \end{frame}
 
@@ -73,17 +101,17 @@
   \end{itemize}
 \end{frame}
 
-\subsection{Integration with Proto-Quipper}
+\subsection{Simulation with Qiskit}
 
-\begin{frame}{Integration with Proto-Quipper}
+\begin{frame}{Simulation with Qiskit}
   \begin{itemize}
     \item
   \end{itemize}
 \end{frame}
 
-\subsection{Simulation with Qiskit}
+\subsection{Integration with Proto-Quipper}
 
-\begin{frame}{Simulation with Qiskit}
+\begin{frame}{Integration with Proto-Quipper}
   \begin{itemize}
     \item
   \end{itemize}
