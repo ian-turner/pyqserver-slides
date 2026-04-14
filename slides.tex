@@ -466,16 +466,30 @@ bs[1] = measure qs[1];
 \section{Related Work}
 
 \begin{frame}{Related Work}
+  \small
   \begin{itemize}
-    \item
+    \item \textbf{LinguaQuanta}~\cite{wesley2024linguaquanta}: converts Quipper to OpenQASM, but only supports \emph{boxed} circuits --- no dynamic lifting
+    \item \textbf{Q\# / QIR}~\cite{stade2024towards}: Q\# compiles to quantum intermediate representation (QIR, LLVM-based)
+    \item \textbf{Silq}~\cite{bichsel2020silq}: high-level language with a custom simulator; cannot target third-party simulators or real hardware
+    \item \textbf{Cirq / Qiskit dynamic circuits}: support classically-controlled gates and measurement loops, but \emph{not} dynamic qubit allocation --- all qubits must be declared upfront
+    \item Proto-Quipper allows seamless interleaving of circuit generation and execution --- not matched by existing tools
   \end{itemize}
 \end{frame}
 
 \section{Conclusion and Future Work}
 
 \begin{frame}{Conclusion and Future Work}
+  \textbf{Conclusions}
   \begin{itemize}
-    \item
+    \item Proto-Quipper programs can be simulated on third-party simulators (Cirq, Qiskit) via a Python server
+    \item Extends qubit count beyond the Haskell simulator: Python scales to $\sim$28 qubits vs.\ $\sim$20
+    \item Still limited by memory ($2^n$ statevector); sparse-map Haskell remains faster for low-superposition circuits
+  \end{itemize}
+  \vspace{0.1em}
+  \textbf{Future Work}
+  \begin{itemize}
+    \item Tensor network simulators~\cite{berezutskii2025tensor}: exploit low entanglement to reach hundreds of qubits
+    \item Compile Proto-Quipper directly to QIR or OpenQASM for real quantum hardware
   \end{itemize}
 \end{frame}
 
