@@ -363,10 +363,104 @@ bs[1] = measure qs[1];
 
 \section{Benchmark Results}
 
-\begin{frame}{Benchmark Results}
+\begin{frame}{Benchmarks Overview}
+  We evaluate simulators on a suite of Proto-Quipper benchmark programs:
   \begin{itemize}
-    \item
+    \item Quantum Fourier Transform (QFT)
+    \item Binary adders: QFT adder, Cuccaro adder, Gidney adder~\cite{ruiz2017quantum,cuccaro2004new,gidney2018halving}
+    \item MaxCut QAOA~\cite{farhi2014quantum}
+    \item Multi-qubit teleportation~\cite{pirandola2015advances}
+    \item Repeat-Until-Success (RUS) circuits~\cite{paetznick2013repeat}
   \end{itemize}
+  \vspace{0.5em}
+  Each benchmark compares: \textbf{Haskell server}, \textbf{queued} and \textbf{non-queued} Python server (Cirq/Qiskit), and \textbf{direct} Qiskit/Cirq (no Proto-Quipper).
+\end{frame}
+
+\begin{frame}{Quantum Fourier Transform}
+  \begin{columns}[c]
+    \begin{column}{0.57\textwidth}
+      \includegraphics[width=\linewidth]{images/qft.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \begin{itemize}
+        \item Queued Cirq/Qiskit significantly outperform Haskell as qubit count grows
+        \item Haskell crashes beyond $\sim$20 qubits; Python simulators scale to 28
+        \item Client-server overhead is roughly \textbf{constant}: simulation time converges to bare simulator at $\sim$25 qubits
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Binary Adders}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/qftadder.png}\\[0.2em]
+      \textbf{\small QFT adder}\\[0.3em]
+      \footnotesize Uses QFT to create superposition --- Cirq/Qiskit are competitive with Haskell
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/cuccaro.png}\\[0.2em]
+      \textbf{\small Cuccaro adder}\\[0.3em]
+      \footnotesize Classical ripple-carry circuit, low superposition --- Haskell's sparse map is efficient
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/gidney.png}\\[0.2em]
+      \textbf{\small Gidney adder}\\[0.3em]
+      \footnotesize Hybrid classical-quantum with dynamic lifting --- Haskell still faster for the same reason
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \footnotesize\textit{Haskell stores state as a sparse map (bit string $\to$ amplitude): efficient when superposition is low; Cirq/Qiskit always store the full $2^n$ statevector.}
+\end{frame}
+
+\begin{frame}{MaxCut QAOA}
+  \begin{columns}[c]
+    \begin{column}{0.57\textwidth}
+      \includegraphics[width=\linewidth]{images/maxcut.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \begin{itemize}
+        \item MaxCut: partition a graph to maximise edges crossing the cut~\cite{farhi2014quantum}
+        \item Near-term quantum advantage candidate; requires fast, accurate simulation
+        \item High superposition and entanglement $\Rightarrow$ Cirq/Qiskit \textbf{dramatically} outperform Haskell
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Multi-Qubit Teleportation}
+  \begin{columns}[c]
+    \begin{column}{0.57\textwidth}
+      \includegraphics[width=\linewidth]{images/tele.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \begin{itemize}
+        \item Repeats single-qubit teleportation $n$ times to show scaling behaviour~\cite{pirandola2015advances}
+        \item Qiskit/Cirq outperform Haskell at larger qubit counts
+        \item Demonstrates practical use case: quantum cryptography and networking
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Repeat-Until-Success}
+  \begin{columns}[c]
+    \begin{column}{0.57\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.75\textheight,keepaspectratio]{images/v3.png}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \small
+      \begin{itemize}
+        \item Non-deterministic gate decompositions~\cite{paetznick2013repeat}: repeat until ancilla measurement meets terminal condition
+        \item Excellent benchmark for \textbf{dynamic lifting}: many mid-circuit measurements and branches
+        \item Uses the V3 gate; Cirq/Qiskit handle measurement-driven control efficiently
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \section{Related Work}
