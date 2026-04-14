@@ -8,6 +8,37 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{circuitikz}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codekw}{RGB}{0,0,180}
+\definecolor{codestr}{RGB}{0,128,0}
+\definecolor{codecmt}{RGB}{120,120,120}
+
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  frame=none,
+  showstringspaces=false,
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecmt}\itshape,
+}
+
+\lstdefinelanguage{ProtoQuipper}{
+  keywords={let, in, dynlift},
+  morecomment=[l]{--},
+}
+
+\lstdefinelanguage{OpenQASM}{
+  keywords={qubit, bit, measure, gate, include, reset},
+  morestring=[b]",
+  morecomment=[l]{//},
+}
+
+\lstdefinelanguage{QServer}{
+  keywords={Q, H, X, Y, Z, S, T, CNOT, M, R},
+}
 \usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=3]{biblatex}
 \addbibresource{refs.bib}
 
@@ -105,15 +136,10 @@
 
 \begin{frame}{Available Simulators}
   \begin{itemize}
-    \item
-  \end{itemize}
-\end{frame}
-
-\subsection{Simulation with Qiskit}
-
-\begin{frame}{Simulation with Qiskit}
-  \begin{itemize}
-    \item
+    \item Dozens of state-of-the-art quantum simulators exist, employing a variety of simulation methods (statevector, tensor networks, decision trees, etc.)~\cite{jamadagni2024benchmarking}
+    \item We focus on \emph{statevector simulators}, which model quantum states via matrix-vector multiplication
+    \item We chose Cirq and Qiskit: the most widely used and actively developed quantum computing libraries, each with multiple state-of-the-art simulation backends
+    \item Both support \emph{dynamic circuits} (classically-controlled gates, while loops), but these are experimental and insufficient for dynamic lifting: they do not allow communication between the Python runtime and the circuit simulation runtime
   \end{itemize}
 \end{frame}
 
@@ -121,7 +147,58 @@
 
 \begin{frame}{Integration with Proto-Quipper}
   \begin{itemize}
-    \item
+    \item Key challenges of integrating Cirq and Qiskit with Proto-Quipper:
+    \begin{itemize}
+      \item No dynamic qubit allocation --- ancilla qubits must be pre-allocated at circuit generation time
+      \item A circuit object must be constructed for every simulation, even single-gate instructions
+      \item Measurement semantics differ: Proto-Quipper measurements \emph{consume} a qubit; Cirq/Qiskit leave qubits in a collapsed state
+    \end{itemize}
+    \item Solution: use OpenQASM as an intermediate representation --- both simulators have OpenQASM import functions, and QServer is syntactically similar to OpenQASM 2
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \begin{center}
+    \resizebox{\textwidth}{!}{%
+      \begin{circuitikz}
+        \tikzstyle{every node}=[font=\LARGE]
+        \draw [rounded corners=4.8, align=left] (6.25,15) rectangle node[align=center] {Proto-Quipper \\ Interpreter} (10.25,10.25);
+        \draw [rounded corners=4.8] (16.25,15) rectangle node {\LARGE Server} (20.25,10.25);
+        \draw [->, >=Stealth] (16.25,11.5) -- (10.25,11.5);
+        \node [font=\LARGE] at (13.25,15) {Commands};
+        \node [font=\LARGE] at (13.25,12) {Dynamic Lifting};
+        \draw [rounded corners=4.8] (16.5,11.5) rectangle node {\normalsize Internal State} (20,10.5);
+        \draw [rounded corners=4.8] (1,13.25) rectangle node {\normalsize Source Code} (5,12);
+        \draw [->, >=Stealth] (5,12.75) -- (6.25,12.75);
+        \draw [rounded corners=4.8] (21.25,14) rectangle node {\large OpenQASM} (24.25,12.75);
+        \draw [->, >=Stealth] (20.25,13.5) -- (21.25,13.5);
+        \draw [rounded corners=4.8] (25.75,14) rectangle node {\large Cirq} (28.5,12.75);
+        \draw [rounded corners=4.8] (25.75,12.25) rectangle node {\large Qiskit} (28.5,11);
+        \draw [->, >=Stealth] (24.25,13.5) -- (25.75,13.5);
+        \draw [->, >=Stealth] (24.25,13.25) -- (25.75,11.75);
+        \draw [rounded corners=4.8] (11.5,14.5) rectangle node {\large QServer language} (15,13.25);
+        \draw [->, >=Stealth] (10.25,14) -- (11.5,14);
+        \draw [->, >=Stealth] (15,14) -- (16.25,14);
+        \draw [rounded corners=4.8] (21.25,12.25) rectangle node {\large State, Results} (24.25,11);
+        \draw [->, >=Stealth] (21.25,11.75) -- (20.25,11.75);
+        \draw [->, >=Stealth] (25.75,13.25) -- (24.25,11.75);
+        \draw [->, >=Stealth] (25.75,11.5) -- (24.25,11.5);
+      \end{circuitikz}
+    }%
+  \end{center}
+\end{frame}
+
+\subsection{Simulation with Qiskit}
+
+\begin{frame}{Simulation with Qiskit}
+  \begin{itemize}
+    \item QServer has four operation types; each is translated for Qiskit (and similarly for Cirq):
+    \begin{itemize}
+      \item \textbf{Initialization}: new qubit tensored onto existing statevector ($|\psi'\rangle = |0\rangle \otimes |\psi\rangle$); X gate applied if initializing to $|1\rangle$
+      \item \textbf{Unitary gates}: current statevector re-initialized into a new circuit, gate applied, updated statevector extracted
+      \item \textbf{Measurements}: built-in simulator function collapses statevector and returns result; measured qubit then removed from statevector
+      \item \textbf{Read command}: instruction queue flushed and executed, measurement performed, collapsed state saved in memory, result returned to client
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -129,16 +206,159 @@
 
 \begin{frame}{Instruction Queuing}
   \begin{itemize}
-    \item
+    \item The server only returns results on \texttt{read} commands, so all other instructions can be deferred
+    \item Instructions are kept in a queue and evaluated as one circuit when a \texttt{read} command arrives
+    \item Advantages over instruction-by-instruction execution:
+    \begin{itemize}
+      \item Statevector initialized only once per queue flush instead of before each gate
+      \item Enables gate fusion and circuit rewriting optimizations within Cirq/Qiskit~\cite{elsman2025gate}
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+  \begin{center}
+    \resizebox{0.5\textwidth}{!}{%
+      \begin{circuitikz}
+        \tikzstyle{every node}=[font=\LARGE]
+        \draw (7.75,14.5) rectangle node {\LARGE $|\psi\rangle$} (9,13.25);
+        \draw [short] (7.25,14.25) -- (7.75,14.25);
+        \draw [short] (7.25,13.5) -- (7.75,13.5);
+        \node [font=\Large] at (6.75,14.25) {$|0\rangle$};
+        \node [font=\Large] at (6.75,13.5) {$|0\rangle$};
+        \node [font=\LARGE] at (13.5,14.5) {$|\psi'\rangle$};
+        \draw (9.5,14.5) rectangle node {\large H} (10,14);
+        \draw [short] (9,14.25) -- (9.5,14.25);
+        \draw [short] (9,13.5) -- (10.25,13.5);
+        \node [font=\Large] at (6.75,15.75) {$|0\rangle$};
+        \node [font=\Large] at (6.75,15) {$|0\rangle$};
+        \draw [short] (7.25,15) -- (12.75,15);
+        \draw [short] (7.25,15.75) -- (12.75,15.75);
+        \draw (10.25,13.75) rectangle node {\large S} (10.75,13.25);
+        \draw [short] (10,14.25) -- (12.75,14.25);
+        \draw [short] (10.75,13.5) -- (12.75,13.5);
+        \draw [short] (11.25,15.875) -- (11.25,14.15);
+        \draw [fill={rgb,255:red,0; green,0; blue,0}] (11.25,14.25) circle (0.1cm);
+        \draw (11.25,15.75) circle (0.125cm);
+        \draw [short] (12.25,15.1) -- (12.25,13.375);
+        \draw [fill={rgb,255:red,0; green,0; blue,0}] (12.25,15) circle (0.1cm);
+        \draw (12.25,13.5) circle (0.125cm);
+      \end{circuitikz}
+    }%
+  \end{center}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \centering{\small\textbf{Without queuing}}
+      \begin{lstlisting}[language=Python, morekeywords={case,match}, basicstyle=\ttfamily\tiny]
+# Inst 1: initialize qubit
+qc = QuantumCircuit(3)
+qc.initialize(phi, [1, 2])
+result = sim.run(qc).result()
+phi = result.get_statevector()
+
+# Inst 2: initialize qubit
+qc = QuantumCircuit(4)
+qc.initialize(phi, [1, 2, 3])
+result = sim.run(qc).result()
+phi = result.get_statevector()
+
+# Inst 3: H gate on qubit 2
+qc = QuantumCircuit(4)
+qc.initialize(phi, [0, 1, 2, 3])
+qc.h(2)
+result = sim.run(qc).result()
+phi = result.get_statevector()
+
+# Insts 4-6: gate instructions
+# ...
+      \end{lstlisting}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centering{\small\textbf{With queuing}}
+      \begin{lstlisting}[basicstyle=\ttfamily\tiny]
+# Run all instructions
+qc = QuantumCircuit(4)
+qc.initialize(phi, [2, 3])
+qc.h(2)
+qc.s(3)
+qc.cx(2, 1)
+qc.cx(1, 3)
+result = sim.run(qc).result()
+phi_new = result.get_statevector()
+      \end{lstlisting}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \subsection{Converting to OpenQASM}
 
-\begin{frame}{Converting to OpenQASM}
+\begin{frame}[fragile]{Converting to OpenQASM}
   \begin{itemize}
-    \item
+    \item QServer commands are parsed as received; in queuing mode, non-measurement commands are placed in a queue
+    \item On a \texttt{read} command, queued commands are converted to OpenQASM via simple pattern matching and run by the simulator
   \end{itemize}
+  \begin{center}
+  \begin{minipage}{0.7\textwidth}
+  \begin{lstlisting}[language=Python, morekeywords={case,match}, basicstyle=\ttfamily\scriptsize]
+case Q():
+    idx = self.free_qubits.pop()
+    self.qubit_map[command.reg] = idx
+    gate_str = 'reset qs[%d];' % idx
+    if command.bvalue:
+        gate_str += '\nx qs[%d];' % idx
+    return gate_str
+case CNOT():
+    x = self.qubit_map[command.x]
+    y = self.qubit_map[command.y]
+    return 'cx qs[%d], qs[%d];' % (x, y)
+  \end{lstlisting}
+  \end{minipage}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+  \begin{columns}[t]
+    \begin{column}{0.42\textwidth}
+      \centering{\small\textbf{Proto-Quipper}}
+      \begin{lstlisting}[language=ProtoQuipper]
+bell00 : !(Unit -> Qubit * Qubit)
+bell00 x =
+  let a = H (Init0 ())
+      b = Init0 ()
+      (b, a) = CNot b a
+  in (a, b)
+
+bellMeas : Bool * Bool
+bellMeas =
+  let (a, b) = bell00 ()
+  in (dynlift (Meas a),
+      dynlift (Meas b))
+      \end{lstlisting}
+    \end{column}
+    \begin{column}{0.15\textwidth}
+      \vspace{3em}
+      \centering{$\Longrightarrow$}
+    \end{column}
+    \begin{column}{0.43\textwidth}
+      \centering{\small\textbf{QServer commands}}
+      \begin{lstlisting}[language=QServer]
+Q 0; H 0; Q 1; CNOT 1 0;
+M 0; R 0; M 1; R 1
+      \end{lstlisting}
+      \vspace{0.5em}
+      \centering{$\Longrightarrow$}
+      \vspace{0.5em}
+      \centering{\small\textbf{OpenQASM}}
+      \begin{lstlisting}[language=OpenQASM]
+qubit[2] qs;
+bit[2] bs;
+h qs[0];
+cx qs[0], qs[1];
+bs[0] = measure qs[0];
+bs[1] = measure qs[1];
+      \end{lstlisting}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \section{Benchmark Results}
