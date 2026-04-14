@@ -8,6 +8,22 @@
 \usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{circuitikz}
+\usepackage[backend=biber,style=numeric,sorting=none,maxbibnames=3]{biblatex}
+\addbibresource{refs.bib}
+
+% Compact bibliography for slides
+\renewcommand*{\bibfont}{\tiny}
+\setlength{\bibitemsep}{2pt}
+\setlength{\bibnamesep}{0pt}
+\setlength{\bibparsep}{0pt}
+\AtEveryBibitem{%
+  \clearfield{url}%
+  \clearfield{doi}%
+  \clearfield{isbn}%
+  \clearfield{issn}%
+  \clearfield{eprint}%
+  \clearfield{note}%
+}
 
 \title{Efficient Simulation of Proto-Quipper Programs}
 \author{Ian Turner, Peng Fu}
@@ -30,9 +46,9 @@
 \begin{frame}{Quantum Programming Languages}
   \begin{itemize}
     \item Quantum programming languages allow programmers to design quantum algorithms at varying levels of abstraction
-    \item Low-level: OpenQASM --- an intermediate representation for describing quantum circuits
-    \item Mid-level: Cirq and Qiskit --- use Python libraries to construct quantum circuits
-    \item High-level: Silq, Q\#, Quipper, Proto-Quipper --- provide advanced features such as automatic uncomputation, type-checking, dynamic lifting, and type-safe circuit reversing and control
+    \item Low-level: OpenQASM~\cite{cross2022openqasm} --- an intermediate representation for describing quantum circuits
+    \item Mid-level: Cirq~\cite{cirq} and Qiskit~\cite{qiskit} --- use Python libraries to construct quantum circuits
+    \item High-level: Silq~\cite{bichsel2020silq}, Q\#~\cite{svore2018q}, Quipper~\cite{green2013quipper}, Proto-Quipper~\cite{fu2023proto} --- provide advanced features such as automatic uncomputation, type-checking, dynamic lifting, and type-safe circuit reversing and control
   \end{itemize}
 \end{frame}
 
@@ -40,13 +56,13 @@
 
 \begin{frame}{Proto-Quipper}
   \begin{itemize}
-    \item Proto-Quipper is a family of functional quantum programming languages giving a formal foundation to Quipper
+    \item Proto-Quipper is a family of functional quantum programming languages giving a formal foundation to Quipper~\cite{fu2023proto,fu2024proto}
     \item Has two runtimes: \emph{circuit generation time} and \emph{circuit execution time}
     \begin{itemize}
       \item Variables fixed at generation time are called \emph{parameters}; variables fixed at execution time are called \emph{states}
     \end{itemize}
     \item \emph{Dynamic lifting} allows state variables to be promoted to parameters --- measurement results from execution time can inform generation of the next circuit
-    \item This interleaving of the two runtimes enables more complex circuits, but is expensive: all active qubits must be held in long-term storage while awaiting classical control
+    \item This interleaving of the two runtimes enables more complex circuits, but is expensive: all active qubits must be held in long-term storage while awaiting classical control~\cite{fu2023proto}
   \end{itemize}
 \end{frame}
 
@@ -54,9 +70,9 @@
 
 \begin{frame}{Simulating Proto-Quipper}
   \begin{itemize}
-    \item Proto-Quipper uses a client-server architecture for simulation
+    \item Proto-Quipper uses a client-server architecture for simulation~\cite{fu2023proto}
     \item The \emph{client} is the Proto-Quipper interpreter; the \emph{server} is the simulator
-    \item The client sends quantum instructions (QServer commands) to the server; the server sends back measurement results via dynamic lifting
+    \item The client sends quantum instructions (QServer commands~\cite{fu2023proto}) to the server; the server sends back measurement results via dynamic lifting
   \end{itemize}
   \begin{center}
     \resizebox{0.55\textwidth}{!}{%
@@ -147,6 +163,10 @@
   \begin{itemize}
     \item
   \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+  \printbibliography[heading=none]
 \end{frame}
 
 \end{document}
