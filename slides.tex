@@ -66,38 +66,14 @@
   \titlepage
 \end{frame}
 
-\begin{frame}{Outline}
-  \tableofcontents[hideallsubsections]
-\end{frame}
-
-\section{Introduction}
-
-\subsection{Quantum Programming Languages}
-
-\begin{frame}{Quantum Programming Languages}
-  \begin{itemize}
-    \item Quantum programming languages allow programmers to design quantum algorithms at varying levels of abstraction
-    \item Low-level: OpenQASM~\cite{cross2022openqasm} --- an intermediate representation for describing quantum circuits
-    \item Mid-level: Cirq~\cite{cirq} and Qiskit~\cite{qiskit} --- use Python libraries to construct quantum circuits
-    \item High-level: Silq~\cite{bichsel2020silq}, Q\#~\cite{svore2018q}, Quipper~\cite{green2013quipper}, Proto-Quipper~\cite{fu2023proto} --- provide advanced features such as automatic uncomputation, type-checking, dynamic lifting, and type-safe circuit reversing and control
-  \end{itemize}
-\end{frame}
-
-\subsection{Proto-Quipper}
-
 \begin{frame}{Proto-Quipper}
   \begin{itemize}
-    \item Proto-Quipper is a family of functional quantum programming languages giving a formal foundation to Quipper~\cite{fu2023proto,fu2024proto}
+    \item Quantum programming languages range from low-level (OpenQASM~\cite{cross2022openqasm}) to high-level (Silq~\cite{bichsel2020silq}, Q\#~\cite{svore2018q}, Quipper~\cite{green2013quipper})
+    \item Proto-Quipper~\cite{fu2023proto,fu2024proto} is a family of functional quantum languages giving a formal foundation to Quipper
     \item Has two runtimes: \emph{circuit generation time} and \emph{circuit execution time}
-    \begin{itemize}
-      \item Variables fixed at generation time are called \emph{parameters}; variables fixed at execution time are called \emph{states}
-    \end{itemize}
-    \item \emph{Dynamic lifting} allows state variables to be promoted to parameters --- measurement results from execution time can inform generation of the next circuit
-    \item This interleaving of the two runtimes enables more complex circuits, but is expensive: all active qubits must be held in long-term storage while awaiting classical control~\cite{fu2023proto}
+    \item \emph{Dynamic lifting} promotes measurement results from execution time back to generation time, enabling adaptive circuits --- but is expensive: qubits must be held in storage while awaiting classical control
   \end{itemize}
 \end{frame}
-
-\subsection{Simulating Proto-Quipper}
 
 \begin{frame}{Simulating Proto-Quipper}
   \begin{itemize}
@@ -120,8 +96,6 @@
   \end{center}
 \end{frame}
 
-\subsection{Contributions}
-
 \begin{frame}{Contributions}
   \begin{itemize}
     \item Extend the Proto-Quipper simulation architecture with state-of-the-art simulators from Cirq and Qiskit, enabling dynamic lifting on third-party simulators
@@ -130,30 +104,16 @@
   \end{itemize}
 \end{frame}
 
-\section{Integrating Third-Party Simulators}
-
-\subsection{Available Simulators}
-
-\begin{frame}{Available Simulators}
+\begin{frame}{Integrating Third-Party Simulators}
   \begin{itemize}
-    \item Dozens of state-of-the-art quantum simulators exist, employing a variety of simulation methods (statevector, tensor networks, decision trees, etc.)~\cite{jamadagni2024benchmarking}
-    \item We focus on \emph{statevector simulators}, which model quantum states via matrix-vector multiplication
-    \item We chose Cirq and Qiskit: the most widely used and actively developed quantum computing libraries, each with multiple state-of-the-art simulation backends
-    \item Both support \emph{dynamic circuits} (classically-controlled gates, while loops), but these are experimental and insufficient for dynamic lifting: they do not allow communication between the Python runtime and the circuit simulation runtime
-  \end{itemize}
-\end{frame}
-
-\subsection{Integration with Proto-Quipper}
-
-\begin{frame}{Integration with Proto-Quipper}
-  \begin{itemize}
-    \item Key challenges of integrating Cirq and Qiskit with Proto-Quipper:
+    \item We focus on \emph{statevector simulators}; we chose Cirq and Qiskit --- the most widely used libraries, each with state-of-the-art backends~\cite{jamadagni2024benchmarking}
+    \item Both support dynamic circuits experimentally, but insufficiently: they do not allow communication between the Python runtime and the circuit simulation runtime
+    \item Key integration challenges:
     \begin{itemize}
       \item No dynamic qubit allocation --- ancilla qubits must be pre-allocated at circuit generation time
-      \item A circuit object must be constructed for every simulation, even single-gate instructions
       \item Measurement semantics differ: Proto-Quipper measurements \emph{consume} a qubit; Cirq/Qiskit leave qubits in a collapsed state
     \end{itemize}
-    \item Solution: use OpenQASM as an intermediate representation --- both simulators have OpenQASM import functions, and QServer is syntactically similar to OpenQASM 2
+    \item Solution: use OpenQASM as an intermediate representation --- both simulators support OpenQASM import, and QServer is syntactically similar to OpenQASM 2
   \end{itemize}
 \end{frame}
 
@@ -188,8 +148,6 @@
   \end{center}
 \end{frame}
 
-\subsection{Simulation with Qiskit}
-
 \begin{frame}{Simulation with Qiskit}
   \begin{itemize}
     \item QServer has four operation types; each is translated for Qiskit (and similarly for Cirq):
@@ -201,8 +159,6 @@
     \end{itemize}
   \end{itemize}
 \end{frame}
-
-\subsection{Instruction Queuing}
 
 \begin{frame}{Instruction Queuing}
   \begin{itemize}
@@ -290,8 +246,6 @@ phi_new = result.get_statevector()
   \end{columns}
 \end{frame}
 
-\subsection{Converting to OpenQASM}
-
 \begin{frame}[fragile]{Converting to OpenQASM}
   \begin{itemize}
     \item QServer commands are parsed as received; in queuing mode, non-measurement commands are placed in a queue
@@ -360,8 +314,6 @@ bs[1] = measure qs[1];
     \end{column}
   \end{columns}
 \end{frame}
-
-\section{Benchmark Results}
 
 \begin{frame}{Benchmarks Overview}
   We evaluate simulators on a suite of Proto-Quipper benchmark programs:
@@ -463,8 +415,6 @@ bs[1] = measure qs[1];
   \end{columns}
 \end{frame}
 
-\section{Related Work}
-
 \begin{frame}{Related Work}
   \small
   \begin{itemize}
@@ -475,8 +425,6 @@ bs[1] = measure qs[1];
     \item Proto-Quipper allows seamless interleaving of circuit generation and execution --- not matched by existing tools
   \end{itemize}
 \end{frame}
-
-\section{Conclusion and Future Work}
 
 \begin{frame}{Conclusion and Future Work}
   \textbf{Conclusions}
