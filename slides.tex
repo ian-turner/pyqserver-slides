@@ -208,13 +208,9 @@
     \draw (4.0,-0.95) -- (4.0, 0.73);
     \fill (4.0, 0.0) circle (0.07cm);
     \fill (4.0, 0.8) circle (0.07cm);
-    % Dashed box around the three gates to be fused
-    \draw[dashed, rounded corners=3pt, gray]
-      (0.55, 0.50) rectangle (2.74, 1.10);
-
     %% ARROW
     \draw[->, thick] (4.75, 0) -- (5.35, 0)
-      node[midway, above, font=\scriptsize] {fuse};
+      node[midway, above=3pt, font=\scriptsize] {fuse};
 
     %% AFTER
     \draw (5.5, 0.8) -- (9.3, 0.8);
