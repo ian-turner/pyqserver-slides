@@ -170,6 +170,78 @@
       \item Enables gate fusion and circuit rewriting optimizations within Cirq/Qiskit~\cite{elsman2025gate}
     \end{itemize}
   \end{itemize}
+  \vspace{0.2em}
+  \begin{center}
+  \begin{tikzpicture}[
+      gate/.style={draw, rounded corners=2pt, minimum width=0.52cm,
+                   minimum height=0.52cm, fill=white, font=\small},
+      hgate/.style={draw, rounded corners=2pt, minimum width=0.52cm,
+                    minimum height=0.52cm, fill=orange!20, font=\small},
+      fgate/.style={draw, rounded corners=2pt, minimum width=0.60cm,
+                    minimum height=0.52cm, fill=orange!20, font=\small},
+      every node/.style={inner sep=1pt},
+      scale=0.85
+    ]
+    % Wire y-positions: q0=0.8, q1=0.0, q2=-0.8
+
+    %% BEFORE
+    \draw (0.05, 0.8) -- (4.55, 0.8);
+    \draw (0.05, 0.0) -- (4.55, 0.0);
+    \draw (0.05,-0.8) -- (4.55,-0.8);
+    \node[anchor=east] at (0,  0.8) {\small$|q_0\rangle$};
+    \node[anchor=east] at (0,  0.0) {\small$|q_1\rangle$};
+    \node[anchor=east] at (0, -0.8) {\small$|q_2\rangle$};
+    % Single-qubit gates
+    \node[hgate] at (0.85, 0.8) {H};
+    \node[gate]  at (0.85, 0.0) {X};
+    \node[gate]  at (0.85,-0.8) {T};
+    \node[hgate] at (1.65, 0.8) {S};
+    \node[hgate] at (2.45, 0.8) {T};
+    % CNOT: q0 control, q1 target
+    \draw[fill=white] (3.2, 0.0) circle (0.15cm);
+    \draw (3.05, 0.0) -- (3.35, 0.0);
+    \draw (3.2,-0.15) -- (3.2, 0.73);
+    \fill (3.2, 0.8) circle (0.07cm);
+    % Toffoli: q0,q1 controls, q2 target
+    \draw[fill=white] (4.0,-0.8) circle (0.15cm);
+    \draw (3.85,-0.8) -- (4.15,-0.8);
+    \draw (4.0,-0.95) -- (4.0, 0.73);
+    \fill (4.0, 0.0) circle (0.07cm);
+    \fill (4.0, 0.8) circle (0.07cm);
+    % Dashed box around the three gates to be fused
+    \draw[dashed, rounded corners=3pt, gray]
+      (0.55, 0.50) rectangle (2.74, 1.10);
+
+    %% ARROW
+    \draw[->, thick] (4.75, 0) -- (5.35, 0)
+      node[midway, above, font=\scriptsize] {fuse};
+
+    %% AFTER
+    \draw (5.5, 0.8) -- (9.3, 0.8);
+    \draw (5.5, 0.0) -- (9.3, 0.0);
+    \draw (5.5,-0.8) -- (9.3,-0.8);
+    \node[anchor=west] at (9.3,  0.8) {\small$|q_0\rangle$};
+    \node[anchor=west] at (9.3,  0.0) {\small$|q_1\rangle$};
+    \node[anchor=west] at (9.3, -0.8) {\small$|q_2\rangle$};
+    % Fused U on q0; X and T unchanged on q1, q2
+    \node[fgate] at (6.3, 0.8) {$U$};
+    \node[gate]  at (6.3, 0.0) {X};
+    \node[gate]  at (6.3,-0.8) {T};
+    % CNOT
+    \draw[fill=white] (7.35, 0.0) circle (0.15cm);
+    \draw (7.2, 0.0) -- (7.5, 0.0);
+    \draw (7.35,-0.15) -- (7.35, 0.73);
+    \fill (7.35, 0.8) circle (0.07cm);
+    % Toffoli
+    \draw[fill=white] (8.2,-0.8) circle (0.15cm);
+    \draw (8.05,-0.8) -- (8.35,-0.8);
+    \draw (8.2,-0.95) -- (8.2, 0.73);
+    \fill (8.2, 0.0) circle (0.07cm);
+    \fill (8.2, 0.8) circle (0.07cm);
+
+  \end{tikzpicture}\\[0.3em]
+  {\scriptsize H, S, T on $q_0$ fused into one unitary $U$; multi-qubit gates unchanged~\cite{elsman2025gate}}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile,plain]
